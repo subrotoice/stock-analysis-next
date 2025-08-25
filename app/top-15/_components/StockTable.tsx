@@ -1,9 +1,9 @@
 "use client";
 
+import SectorFilterDropdown from "@/app/components/SectorFilterDropdown";
+import sectorMap from "@/app/data/sectorMap";
+import { StockData } from "@/app/page";
 import { useEffect, useState } from "react";
-import SectorFilterDropdown from "./SectorFilterDropdown";
-import sectorMap from "../data/sectorMap";
-import { StockData } from "../page";
 
 type SortKey = "rsi" | "value" | "peRatio" | "lowFrom52wHigh";
 type SortOrder = "asc" | "desc";
@@ -23,26 +23,12 @@ const StockTable = ({ stocks }: StockDataProps) => {
   const sectorList = Object.values(sectorMap);
 
   useEffect(() => {
-    let lowFiltered: StockData[] = [];
-    if (lowFrom52wHighInput) {
-      lowFiltered = filtered.filter(
-        (stock) => stock.lowFrom52wHigh * 100 > parseFloat(lowFrom52wHighInput)
-      );
-    } else {
-      lowFiltered = stocks;
-    }
+    const selectedIds = new Set([
+      234, 50, 110, 147, 39, 167, 45, 2615821, 94, 195, 212,
+    ]);
 
-    let updated = lowFiltered
-      .filter(
-        (stock) =>
-          stock.code.toLowerCase().includes(searchCode.toLowerCase()) &&
-          stock.sector.toLowerCase().includes(searchSector.toLowerCase()) &&
-          stock.category === "A" &&
-          stock.close / stock.EPS > 0 &&
-          30 > stock.close / stock.EPS &&
-          stock.close &&
-          stock.EPS
-      )
+    let updated = stocks
+      .filter((stock) => selectedIds.has(stock.id))
       .map((stock) => ({
         ...stock,
         lowFrom52wHigh: (stock.yearly_high - stock.close) / stock.yearly_high,
@@ -100,7 +86,7 @@ const StockTable = ({ stocks }: StockDataProps) => {
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold text-center pb-4">
-        Stock Data (A cat & PE:3-30, {filtered.length} Companies)
+        Top 15 Fundamental Stocks
       </h1>
       <div className="flex flex-col md:flex-row gap-4 mb-4">
         <input

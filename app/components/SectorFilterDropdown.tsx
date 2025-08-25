@@ -20,7 +20,7 @@ const SectorFilterDropdown: React.FC<SectorFilterDropdownProps> = ({
     <select
       value={selected}
       onChange={(e) => onSelect(e.target.value)}
-      className="border rounded px-3 py-2 w-full md:w-1/2"
+      className="border rounded px-3 py-2 w-full md:w-1/3"
     >
       <option value="">All Sectors</option>
       {sectors.map((sector) => (

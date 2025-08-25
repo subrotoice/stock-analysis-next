@@ -25,20 +25,18 @@ export interface StockData {
   institute: number; // Institutional investors percentage
   govt: number; // Government ownership percentage
   director: number; // Board directors/insiders percentage
+  lowFrom52wHigh: number;
 }
 export default async function Home() {
   const data = await fetch("https://stocknow.com.bd/api/v1/data-matrix", {
     cache: "no-store",
   });
-  const stocksList: StockData[] = await data.json();
-  const stocksList2 = stocksList.filter(
-    (stock) =>
-      stock.category === "A" &&
-      stock.close / stock.EPS > 0 &&
-      20 > stock.close / stock.EPS &&
-      stock.close &&
-      stock.EPS
-  );
 
-  return <StockTable stocks={stocksList2} />;
+  const stocksList: StockData[] = await data.json();
+
+  return (
+    <>
+      <StockTable stocks={stocksList} />
+    </>
+  );
 }
