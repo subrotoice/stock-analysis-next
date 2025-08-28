@@ -14,6 +14,13 @@ interface StockDataProps {
 
 const StockTable = ({ stocks }: StockDataProps) => {
   const [filtered, setFiltered] = useState<StockData[]>([]);
+  const [watchlist, setWatchlist] = useState<number[]>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("watchlist");
+      return stored ? JSON.parse(stored) : [];
+    }
+    return [];
+  });
   const [searchCode, setSearchCode] = useState("");
   const [searchSector, setSearchSector] = useState("");
   const [lowFrom52wHighInput, setlowFrom52wHighInput] = useState("");
@@ -23,10 +30,7 @@ const StockTable = ({ stocks }: StockDataProps) => {
   const sectorList = Object.values(sectorMap);
 
   useEffect(() => {
-    const selectedIds = new Set([
-      234, 50, 110, 147, 39, 167, 45, 2615821, 94, 195, 212,
-    ]);
-
+    const selectedIds = new Set(watchlist);
     let updated = stocks
       .filter((stock) => selectedIds.has(stock.id))
       .map((stock) => ({
@@ -68,6 +72,17 @@ const StockTable = ({ stocks }: StockDataProps) => {
     sortOrder,
     lowFrom52wHighInput,
   ]);
+
+  // Save to localStorage whenever watchlist changes
+  useEffect(() => {
+    localStorage.setItem("watchlist", JSON.stringify(watchlist));
+  }, [watchlist]);
+
+  const toggleWatchlist = (id: number) => {
+    setWatchlist((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -154,7 +169,17 @@ const StockTable = ({ stocks }: StockDataProps) => {
                 <tr key={stock.id} className="hover:bg-gray-50">
                   <td className="px-4 py-2 border">
                     <span className="font-semibold">
-                      {stock.code} ({stock.name.slice(0, 40)})
+                      {stock.id} {stock.code} ({stock.name.slice(0, 40)})
+                    </span>
+                    <span
+                      className="cursor-pointer ml-1 leading-none"
+                      onClick={() => toggleWatchlist(stock.id)}
+                    >
+                      {watchlist.includes(stock.id) ? (
+                        "⭐"
+                      ) : (
+                        <strong className="text-xl leading-none">☆</strong>
+                      )}
                     </span>
                     <br />
                     {stock.sector} <br />

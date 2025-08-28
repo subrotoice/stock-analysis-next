@@ -3,6 +3,7 @@
 import SectorFilterDropdown from "@/app/components/SectorFilterDropdown";
 import sectorMap from "@/app/data/sectorMap";
 import { StockData } from "@/app/page";
+import { ClientPageRoot } from "next/dist/client/components/client-page";
 import { useEffect, useState } from "react";
 
 type SortKey = "rsi" | "value" | "peRatio" | "lowFrom52wHigh";
@@ -27,8 +28,22 @@ const StockTable = ({ stocks }: StockDataProps) => {
       234, 50, 110, 147, 39, 167, 45, 2615821, 94, 195, 212,
     ]);
 
-    let updated = stocks
-      .filter((stock) => selectedIds.has(stock.id))
+    let lowFiltered: StockData[] = [];
+    if (lowFrom52wHighInput) {
+      lowFiltered = filtered.filter(
+        (stock) => stock.lowFrom52wHigh * 100 > parseFloat(lowFrom52wHighInput)
+      );
+    } else {
+      lowFiltered = stocks;
+    }
+
+    let updated = lowFiltered
+      .filter(
+        (stock) =>
+          selectedIds.has(stock.id) &&
+          stock.code.toLowerCase().includes(searchCode.toLowerCase()) &&
+          stock.sector.toLowerCase().includes(searchSector.toLowerCase())
+      )
       .map((stock) => ({
         ...stock,
         lowFrom52wHigh: (stock.yearly_high - stock.close) / stock.yearly_high,

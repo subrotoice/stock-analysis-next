@@ -14,6 +14,13 @@ interface StockDataProps {
 
 const StockTable = ({ stocks }: StockDataProps) => {
   const [filtered, setFiltered] = useState<StockData[]>([]);
+  const [watchlist, setWatchlist] = useState<number[]>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("watchlist");
+      return stored ? JSON.parse(stored) : [];
+    }
+    return [];
+  });
   const [searchCode, setSearchCode] = useState("");
   const [searchSector, setSearchSector] = useState("");
   const [lowFrom52wHighInput, setlowFrom52wHighInput] = useState("");
@@ -23,20 +30,13 @@ const StockTable = ({ stocks }: StockDataProps) => {
   const sectorList = Object.values(sectorMap);
 
   useEffect(() => {
-    let lowFiltered: StockData[] = [];
-    if (lowFrom52wHighInput) {
-      lowFiltered = filtered.filter(
-        (stock) => stock.lowFrom52wHigh * 100 > parseFloat(lowFrom52wHighInput)
-      );
-    } else {
-      lowFiltered = stocks;
-    }
-
-    let updated = lowFiltered
+    let updated = stocks
       .filter(
         (stock) =>
           stock.code.toLowerCase().includes(searchCode.toLowerCase()) &&
           stock.sector.toLowerCase().includes(searchSector.toLowerCase()) &&
+          ((stock.yearly_high - stock.close) / stock.yearly_high) * 100 >
+            (parseFloat(lowFrom52wHighInput) || 0) &&
           stock.category === "A" &&
           stock.close / stock.EPS > 0 &&
           30 > stock.close / stock.EPS &&
@@ -82,6 +82,17 @@ const StockTable = ({ stocks }: StockDataProps) => {
     sortOrder,
     lowFrom52wHighInput,
   ]);
+
+  // Save to localStorage whenever watchlist changes
+  useEffect(() => {
+    localStorage.setItem("watchlist", JSON.stringify(watchlist));
+  }, [watchlist]);
+
+  const toggleWatchlist = (id: number) => {
+    setWatchlist((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -168,8 +179,24 @@ const StockTable = ({ stocks }: StockDataProps) => {
                 <tr key={stock.id} className="hover:bg-gray-50">
                   <td className="px-4 py-2 border">
                     <span className="font-semibold">
-                      {stock.code} ({stock.name.slice(0, 40)})
+                      {stock.id} {stock.code} ({stock.name.slice(0, 40)})
                     </span>
+                    <div className="relative group inline-block">
+                      <span
+                        className="cursor-pointer ml-1"
+                        onClick={() => toggleWatchlist(stock.id)}
+                      >
+                        {watchlist.includes(stock.id) ? (
+                          "⭐"
+                        ) : (
+                          <strong className="">☆</strong>
+                        )}
+                      </span>
+
+                      <div className="absolute top-1/2 left-full ml-2 -translate-y-1/2 hidden group-hover:block bg-gray-800 text-white text-sm rounded px-2 py-1 shadow-lg whitespace-nowrap">
+                        Add/Remove Watch List
+                      </div>
+                    </div>
                     <br />
                     {stock.sector} <br />
                     <a
