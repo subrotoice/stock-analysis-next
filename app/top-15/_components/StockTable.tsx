@@ -1,9 +1,8 @@
 "use client";
 
 import SectorFilterDropdown from "@/app/components/SectorFilterDropdown";
-import sectorMap from "@/app/data/sectorMap";
+import sectorMap, { stockExtraData } from "@/app/data/sectorMap";
 import { StockData } from "@/app/page";
-import { ClientPageRoot } from "next/dist/client/components/client-page";
 import { useEffect, useState } from "react";
 
 type SortKey = "rsi" | "value" | "peRatio" | "lowFrom52wHigh";
@@ -28,26 +27,24 @@ const StockTable = ({ stocks }: StockDataProps) => {
       234, 50, 110, 147, 39, 167, 45, 2615821, 94, 195, 212,
     ]);
 
-    let lowFiltered: StockData[] = [];
-    if (lowFrom52wHighInput) {
-      lowFiltered = filtered.filter(
-        (stock) => stock.lowFrom52wHigh * 100 > parseFloat(lowFrom52wHighInput)
-      );
-    } else {
-      lowFiltered = stocks;
-    }
-
-    let updated = lowFiltered
+    let updated = stocks
       .filter(
         (stock) =>
           selectedIds.has(stock.id) &&
           stock.code.toLowerCase().includes(searchCode.toLowerCase()) &&
-          stock.sector.toLowerCase().includes(searchSector.toLowerCase())
+          stock.sector.toLowerCase().includes(searchSector.toLowerCase()) &&
+          ((stock.yearly_high - stock.close) / stock.yearly_high) * 100 >
+            (parseFloat(lowFrom52wHighInput) || 0)
       )
-      .map((stock) => ({
-        ...stock,
-        lowFrom52wHigh: (stock.yearly_high - stock.close) / stock.yearly_high,
-      }));
+      .map((stock) => {
+        const stockExtra = stockExtraData.find((data) => data.id === stock.id);
+
+        return {
+          ...stock,
+          lowFrom52wHigh: (stock.yearly_high - stock.close) / stock.yearly_high,
+          peg: stockExtra ? stockExtra.peg : null,
+        };
+      });
 
     if (sortKey) {
       updated = [...updated].sort((a, b) => {
@@ -169,7 +166,7 @@ const StockTable = ({ stocks }: StockDataProps) => {
                 <tr key={stock.id} className="hover:bg-gray-50">
                   <td className="px-4 py-2 border">
                     <span className="font-semibold">
-                      {stock.code} ({stock.name.slice(0, 40)})
+                      {stock.id}. {stock.code} ({stock.name.slice(0, 40)})
                     </span>
                     <br />
                     {stock.sector} <br />
@@ -238,6 +235,8 @@ const StockTable = ({ stocks }: StockDataProps) => {
                     {stock.close && stock.EPS
                       ? (stock.close / stock.EPS).toFixed(2)
                       : "N/A"}
+                    <br />
+                    {stock.peg && `Peg: ${stock.peg}`}
                   </td>
                   <td className="px-4 py-2 border">{stock.rsi_14}</td>
                   <td className="px-4 py-2 border">{stock.nav}</td>

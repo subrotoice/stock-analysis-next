@@ -23,3 +23,8 @@ export default {
   21: { id: 21, name: "Travel & Leisure" },
   22: { id: 22, name: "Treasury Bond" },
 };
+
+export const stockExtraData = [
+  { id: 39, peg: 0.2 },
+  { id: 50, peg: 0.4 },
+];

@@ -26,6 +26,7 @@ export interface StockData {
   govt: number; // Government ownership percentage
   director: number; // Board directors/insiders percentage
   lowFrom52wHigh: number;
+  peg?: number | null;
 }
 export default async function Home() {
   const data = await fetch("https://stocknow.com.bd/api/v1/data-matrix", {
