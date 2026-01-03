@@ -28,6 +28,7 @@ export interface StockData {
   lowFrom52wHigh: number;
   peg?: number | null;
 }
+
 export default async function Home() {
   const data = await fetch("https://stocknow.com.bd/api/v1/data-matrix", {
     cache: "no-store",
