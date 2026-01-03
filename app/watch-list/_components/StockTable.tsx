@@ -192,6 +192,14 @@ const StockTable = ({ stocks }: StockDataProps) => {
                     </a>{" "}
                     -
                     <a
+                      href={`https://ost.ecosoftbd.com/Analysis`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      EcoSoftbd
+                    </a>
+                    -
+                    <a
                       href={`https://stocknow.com.bd/search?symbol=${stock.code}`}
                       target="_blank"
                       rel="noopener noreferrer"
