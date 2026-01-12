@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import SectorFilterDropdown from "./SectorFilterDropdown";
 import sectorMap from "../data/sectorMap";
 import { StockData } from "../page";
+import StockPopup from "./StockPopup";
 
 type SortKey = "rsi" | "value" | "peRatio" | "lowFrom52wHigh";
 type SortOrder = "asc" | "desc";
@@ -26,6 +27,7 @@ const StockTable = ({ stocks }: StockDataProps) => {
   const [lowFrom52wHighInput, setlowFrom52wHighInput] = useState("");
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
+  const [selectedStock, setSelectedStock] = useState<StockData | null>(null);
 
   const sectorList = Object.values(sectorMap);
 
@@ -178,9 +180,18 @@ const StockTable = ({ stocks }: StockDataProps) => {
               filtered.map((stock) => (
                 <tr key={stock.id} className="hover:bg-gray-50">
                   <td className="px-4 py-2 border">
-                    <span className="font-semibold">
+                    <span
+                      onClick={() => setSelectedStock(stock)}
+                      className="font-semibold cursor-pointer hover:text-[#16a085] transition-colors duration-300"
+                    >
                       {stock.id} {stock.code} ({stock.name.slice(0, 40)})
                     </span>
+                    {selectedStock && selectedStock.id === stock.id && (
+                      <StockPopup
+                        stock={selectedStock}
+                        onClose={() => setSelectedStock(null)}
+                      />
+                    )}
                     <div className="relative group inline-block">
                       <span
                         className="cursor-pointer ml-1"
